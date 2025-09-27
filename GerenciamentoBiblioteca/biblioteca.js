@@ -128,7 +128,7 @@ function editarLivro(id, novoTitulo, novoAutor, novoAno, novoGenero) {
                 l.titulo.toLowerCase() === novoTitulo.toLowerCase() &&
                 l.id !== id
         );
-        
+
         if (tituloDuplicado) {
             console.log(`ERRO: Já existe um livro com o título "${novoTitulo}" no catálogo!`);
             return;
@@ -176,7 +176,7 @@ function removerLivro(id) {
 }
 
 // Função de filtro de disponibilidade
-function filtroDisponibilidade() {
+function listarLivrosDisponiveis() {
     const disponiveis = catalogo.filter(
         (l) => l.disponibilidade
     );
@@ -201,24 +201,133 @@ function filtroDisponibilidade() {
 
 // Função para buscar livro por autor
 function buscarLivroPorAutor(autor) {
-    const livro = catalogo.find(
+    const livrosDoAutor = catalogo.filter(
         (l) => l.autor.toLowerCase() === autor.toLowerCase()
     );
 
-    if (!livro) {
+    if (!livrosDoAutor) {
         console.log(`LIVRO NÃO ENCONTRADO!`);
         return;
     }
 
     console.log(`\nLIVRO ENCONTRADO!`);
-    console.log(`----------------------------------------`);
-    console.log(`| ID: ${livro.id}`);
-    console.log(`| TÍTULO: ${livro.titulo}`);
-    console.log(`| AUTOR: ${livro.autor}`);
-    console.log(`| ANO DE PUBLICAÇÃO: ${livro.ano}`);
-    console.log(`| GÊNERO: ${livro.genero}`);
-    console.log(`| DISPONÍVEL: ${livro.disponibilidade ? "Disponível" : "Insisponível"}`);
-    console.log(`----------------------------------------`);
+
+    livrosDoAutor.forEach((livro) => {
+        console.log(`----------------------------------------`);
+        console.log(`| ID: ${livro.id}`);
+        console.log(`| TÍTULO: ${livro.titulo}`);
+        console.log(`| AUTOR: ${livro.autor}`);
+        console.log(`| ANO DE PUBLICAÇÃO: ${livro.ano}`);
+        console.log(`| GÊNERO: ${livro.genero}`);
+        console.log(`| DISPONÍVEL: ${livro.disponibilidade ? "Disponível" : "Insisponível"}`);
+        console.log(`----------------------------------------`);
+    });
+}
+
+// Função para filtrar livros por gênero
+function listarLivrosPorGenero(genero) {
+    const livrosGenero = catalogo.filter(
+        (l) => l.genero.toLowerCase() === genero.toLowerCase()
+    );
+
+    if (livrosGenero.length === 0) {
+        console.log(`NENHUM LIVRO ENCONTRADO!`);
+        return;
+    }
+
+    console.log(`\nLIVROS DO GÊNERO ${genero}`);
+
+    livrosGenero.forEach((livro) => {
+        console.log(`----------------------------------------`);
+        console.log(`| ID: ${livro.id}`);
+        console.log(`| TÍTULO: ${livro.titulo}`);
+        console.log(`| AUTOR: ${livro.autor}`);
+        console.log(`| ANO DE PUBLICAÇÃO: ${livro.ano}`);
+        console.log(`| GÊNERO: ${livro.genero}`);
+        console.log(`| DISPONÍVEL: ${livro.disponibilidade ? "Disponível" : "Insisponível"}`);
+        console.log(`----------------------------------------`);
+    });
+}
+
+// Função para ordenar livros por ano
+function ordenarLivrosPorAno(ordem = "crescente") {
+    const livrosOrdenados = [...catalogo].sort((a, b) => {
+        return ordem.toLowerCase() === "crescente" ? a.ano - b.ano : b.ano - a.ano;
+    });
+
+    if (livrosOrdenados.length === 0) {
+        console.log(`NENHUM LIVRO CADASTRADO!`);
+        return;
+    }
+
+    console.log(`LIVROS ORDENADOS POR ANO (${ordem.toUpperCase()})`);
+
+    livrosOrdenados.forEach((livro) => {
+        console.log(`----------------------------------------`);
+        console.log(`| ID: ${livro.id}`);
+        console.log(`| TÍTULO: ${livro.titulo}`);
+        console.log(`| AUTOR: ${livro.autor}`);
+        console.log(`| ANO DE PUBLICAÇÃO: ${livro.ano}`);
+        console.log(`| GÊNERO: ${livro.genero}`);
+        console.log(`| DISPONÍVEL: ${livro.disponibilidade ? "Disponível" : "Insisponível"}`);
+        console.log(`----------------------------------------`);
+    });
+}
+
+// Função para registrar empréstimo
+let emprestimos = [];
+
+function registrarEmprestimo(id, nomePessoa, dataDevolucao) {
+    const livro = catalogo.find(
+        (l) => l.id === id
+    );
+
+    if (!livro) {
+        console.log('ERRO: Livro não encontrado!');
+        return;
+    }
+
+    if (!livro.disponibilidade) {
+        console.log(`ERRO: O livro ${livro.titulo} já está emprestado!`);
+        return;
+    }
+
+    livro.disponibilidade = false;
+
+    const dataEmprestimo = new Date().toLocaleDateString("pt-BR");
+
+    const registro = {
+        idLivro: livro.id,
+        titulo: livro.titulo,
+        pessoa: nomePessoa,
+        dataEmprestimo,
+        dataDevolucao
+    };
+
+    emprestimos.push(registro);
+
+    console.log(`EMPRÉSTIMO REGISTRADO!`);
+    console.log(`${livro.titulo} emprestado para ${nomePessoa} em ${dataEmprestimo}, devolução até ${dataDevolucao}.`);
+}
+
+// Função para gerar relatório de empréstimos
+function gerarRelatorioEmprestimos() {
+    if (emprestimos.length === 0) {
+        console.log('NENHUM EMPRÉSTIMO REGISTRADO ATÉ O MOMENTO!');
+        return;
+    }
+
+    console.log(`\n RELATÓRIO DE EMPRÉSTIMOS`);
+
+    emprestimos.forEach((e, index) => {
+        console.log(`----------------------------------------`);
+        console.log(`| ID: ${index + 1}`);
+        console.log(`| LIVRO: ${e.titulo}`);
+        console.log(`| PESSOA: ${e.pessoa}`);
+        console.log(`| DATA DE EMPRÉSTIMO: ${e.dataEmprestimo}`);
+        console.log(`| DATA DE DEVOLUÇÃO: ${e.dataDevolucao}`);
+        console.log(`----------------------------------------`);
+    })
 }
 
 export {
@@ -228,6 +337,10 @@ export {
     editarLivro,
     alterarDisponibilidade,
     removerLivro,
-    filtroDisponibilidade,
-    buscarLivroPorAutor
+    listarLivrosDisponiveis,
+    buscarLivroPorAutor,
+    listarLivrosPorGenero,
+    ordenarLivrosPorAno,
+    registrarEmprestimo,
+    gerarRelatorioEmprestimos
 };
